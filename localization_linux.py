@@ -15,7 +15,7 @@ RES = (640,480)
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--device", type=int, default="/dev/video0")
+    parser.add_argument("--device", type=str, default="/dev/video0")
     parser.add_argument("--width", help='cap width', type=int, default=RES[0])
     parser.add_argument("--height", help='cap height', type=int, default=RES[1])
 
