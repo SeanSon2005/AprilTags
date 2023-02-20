@@ -65,15 +65,8 @@ def main():
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    at_detector = apriltag.Detector(
-        families=families,
-        nthreads=nthreads,
-        quad_decimate=quad_decimate,
-        quad_sigma=quad_sigma,
-        refine_edges=refine_edges,
-        decode_sharpening=decode_sharpening,
-        debug=debug,
-    )
+    at_options = apriltag.DetectorOptions(families=families, nthreads=nthreads, quad_decimate=quad_decimate, quad_sigma=quad_sigma, refine_edges=refine_edges, decode_sharpening=decode_sharpening, debug=debug)
+    at_detector = apriltag.Detector(at_options)
     camera_info = {}
     # Camera Info Setup
     camera_info["res"] = RES
