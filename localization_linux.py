@@ -2,7 +2,7 @@ import copy
 import time
 import argparse
 import numpy as np
-import apriltag
+import dt_apriltags
 import cv2 as cv
 
 # from pupil_apriltags import Detector
@@ -65,8 +65,7 @@ def main():
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    at_options = apriltag.DetectorOptions(families=families, nthreads=nthreads, quad_decimate=quad_decimate, quad_blur=quad_sigma, refine_edges=refine_edges, refine_decode=decode_sharpening, debug=debug)
-    at_detector = apriltag.Detector(at_options)
+    at_detector: dt_apriltags.Detector = dt_apriltags.Detector(families=families, nthreads=nthreads, quad_decimate=quad_decimate, quad_sigma=quad_sigma, refine_edges=refine_edges, decode_sharpening=decode_sharpening, debug=debug)
     camera_info = {}
     # Camera Info Setup
     camera_info["res"] = RES
