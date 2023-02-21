@@ -136,6 +136,7 @@ def main():
                 pose_z_sum += curPose[2][0]
 
         size = len(detections)
+        pose = [[0], [0], [0]]
         if size > 0:
             pose = np.array([pose_x_sum/size,pose_y_sum/size,pose_z_sum/size])
 
