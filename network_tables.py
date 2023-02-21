@@ -2,19 +2,20 @@ import ntcore
 import time
 import threading
 
+inst = 0
+startThread = 0
+
 def waitForConnect():
     """
     Waits for the robot to connect to the driver station.
     """
     while not isConnected():
+        print("testing connection...")
         time.sleep(0.5)
     print("Connected to robot!")
 
-# Initialize ntcore on protocol 4
-inst = ntcore.NetworkTableInstance.getDefault()
-startThread = threading.Thread(target=waitForConnect)
-
 def isConnected() -> bool:
+    global inst
     """
     network tables takes like 15 secs to connect to the robot if the robot was already on when this code launched.\n
     if you just re-deploy code *after* launching this program then the time is only the time to initialize the robot code.\n
@@ -28,6 +29,14 @@ def init():
     """
     Initializes the network tables client. This should be called before any other functions in this module.
     """
+    global inst
+    global startThread
+
+    # Initialize ntcore on protocol 4
+    inst = ntcore.NetworkTableInstance.getDefault()
+    startThread = threading.Thread(target=waitForConnect)
+
+    # start Network Tables Instance
     inst.startClient4("DS GUI Controller")
     inst.setServerTeam(3952)
     inst.startDSClient()
@@ -35,12 +44,14 @@ def init():
     startThread.start()
 
 def getInstance() -> ntcore.NetworkTableInstance:
+    global inst
     """
     Returns the network tables instance.
     """
     return inst
 
 def getTable(tableName) -> ntcore.NetworkTable:
+    global inst
     """
     Returns a table from the network tables server.
     """
@@ -49,6 +60,7 @@ def getTable(tableName) -> ntcore.NetworkTable:
     return inst.getTable(tableName)
 
 def getEntry(tableName, entryName) -> ntcore.NetworkTableEntry:
+    global inst
     """
     Returns an entry from a table from the network tables server.
     """

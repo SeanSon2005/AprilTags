@@ -13,8 +13,6 @@ USING_NT = False
 if USING_NT:
     import network_tables
 
-# time.sleep(30)
-
 TAG_SIZE = 0.15244
 FAMILIES = "tag16h5"
 RES = (640,480)
@@ -72,21 +70,8 @@ def main():
     refine_edges = args.refine_edges
     decode_sharpening = args.decode_sharpening
     debug = args.debug
-    #while True:
-    #    print("hehehe")
+
     r, cap = get_cap(cap_device)
-    # while not r:
-        #time.sleep(1)
-        #r, cap = get_cap(cap_device)
-    #fi = open("wehavecap.txt", "a")
-    #fi.write("we have cap")
-    #fi.close()
-    # while not cap.isOpened():
-        #time.sleep(1)
-        #r, cap = get_cap(cap_device)
-    #fil = open("wehaveopenedcap.txt", "a")
-    #fil.write("we have opened the cap")
-    #fil.close()
     
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
@@ -106,6 +91,8 @@ def main():
                                                                                  camera_info["res"], cv.CV_16SC2)
 
     while True:
+        if not network_tables.isConnected():
+            network_tables.waitForConnect()
         ret, image = cap.read()
         if not ret:
             break
@@ -138,23 +125,15 @@ def main():
         size = len(detections)
         pose = [0, 0, 0]
         if size > 0:
-            pose = np.array([pose_x_sum/size,pose_y_sum/size,pose_z_sum/size])
-
-        poseX = pose[0]
-        poseY = pose[1]
-        poseZ = pose[2]
-
-        poseUpload = [poseX, poseY, poseZ]
+            pose = np.array([metersToInches(pose_x_sum/size),metersToInches(pose_y_sum/size),metersToInches(pose_z_sum/size)])
 
         if USING_NT:
-            network_tables.getEntry("jetson", "apriltags_pose").setDoubleArray(poseUpload)
-        # cv.imshow('AprilTags', undistorted_image)
+            network_tables.getEntry("jetson", "apriltags_pose").setDoubleArray(pose)
 
     cap.release()
-    #cv.destroyAllWindows()
 
 if __name__ == '__main__':
     if USING_NT:
-        while not network_tables.isConnected():
-            time.sleep(0.3)
+        network_tables.init()
+        network_tables.waitForConnect()
     main()
