@@ -1,21 +1,33 @@
 import copy
-import time
 import argparse
 import numpy as np
-import apriltag
+import dt_apriltags
 import cv2 as cv
+import time
 
 # from pupil_apriltags import Detector
 from tag import Tag
+
+USING_NT = False
+
+if USING_NT:
+    import network_tables
+
+# time.sleep(30)
 
 TAG_SIZE = 0.15244
 FAMILIES = "tag16h5"
 RES = (640,480)
 
+def get_cap(cap_device):
+    try:
+        return True, cv.VideoCapture(cap_device)
+    except:
+        return False, None
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--device", type=int, default=1)
+    parser.add_argument("--device", type=str, default="/dev/video0")
     parser.add_argument("--width", help='cap width', type=int, default=RES[0])
     parser.add_argument("--height", help='cap height', type=int, default=RES[1])
 
@@ -60,20 +72,26 @@ def main():
     refine_edges = args.refine_edges
     decode_sharpening = args.decode_sharpening
     debug = args.debug
-
-    cap = cv.VideoCapture(cap_device)
+    #while True:
+    #    print("hehehe")
+    r, cap = get_cap(cap_device)
+    # while not r:
+        #time.sleep(1)
+        #r, cap = get_cap(cap_device)
+    #fi = open("wehavecap.txt", "a")
+    #fi.write("we have cap")
+    #fi.close()
+    # while not cap.isOpened():
+        #time.sleep(1)
+        #r, cap = get_cap(cap_device)
+    #fil = open("wehaveopenedcap.txt", "a")
+    #fil.write("we have opened the cap")
+    #fil.close()
+    
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    at_detector = apriltag.Detector(
-        families=families,
-        nthreads=nthreads,
-        quad_decimate=quad_decimate,
-        quad_sigma=quad_sigma,
-        refine_edges=refine_edges,
-        decode_sharpening=decode_sharpening,
-        debug=debug,
-    )
+    at_detector: dt_apriltags.Detector = dt_apriltags.Detector(families=families, nthreads=nthreads, quad_decimate=quad_decimate, quad_sigma=quad_sigma, refine_edges=refine_edges, decode_sharpening=decode_sharpening, debug=debug)
     camera_info = {}
     # Camera Info Setup
     camera_info["res"] = RES
@@ -87,20 +105,12 @@ def main():
                                                                                  np.eye(3), camera_info["K"],
                                                                                  camera_info["res"], cv.CV_16SC2)
 
-    
-
-    elapsed_time = 1
-
     while True:
-        start_time = time.time()
         ret, image = cap.read()
         if not ret:
             break
         debug_image = copy.deepcopy(image)
-
-        fwidth = (RES[0] + 31) // 32 * 32
-        fheight = (RES[1] + 15) // 16 * 16
-        # Load the Y (luminance) data from the stream
+        #undistort image
         undistorted_image = cv.remap(debug_image, camera_info["map_1"], camera_info["map_2"], interpolation=cv.INTER_LINEAR)
         gray = cv.cvtColor(undistorted_image,cv.COLOR_BGR2GRAY)
 
@@ -128,63 +138,22 @@ def main():
         size = len(detections)
         if size > 0:
             pose = np.array([pose_x_sum/size,pose_y_sum/size,pose_z_sum/size])
-            undistorted_image = draw_tags(undistorted_image, detections, elapsed_time, pose)
 
-        elapsed_time = time.time() - start_time
+        poseX = pose[0][0]
+        poseY = pose[1][0]
+        poseZ = pose[2][0]
 
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
+        poseUpload = [poseX, poseY, poseZ]
 
-        cv.imshow('AprilTags', undistorted_image)
+        if USING_NT:
+            network_tables.getEntry("jetson", "apriltags_pose").setDoubleArray(poseUpload)
+        # cv.imshow('AprilTags', undistorted_image)
 
     cap.release()
-    cv.destroyAllWindows()
-
-
-def draw_tags(
-    image,
-    tags,
-    elapsed_time,
-    pose
-):
-    for tag in tags:
-        tag_id = tag.tag_id
-        center = tag.center
-        corners = tag.corners
-
-        center = (int(center[0]), int(center[1]))
-        corner_01 = (int(corners[0][0]), int(corners[0][1]))
-        corner_02 = (int(corners[1][0]), int(corners[1][1]))
-        corner_03 = (int(corners[2][0]), int(corners[2][1]))
-        corner_04 = (int(corners[3][0]), int(corners[3][1]))
-
-        cv.circle(image, (center[0], center[1]), 5, (0, 0, 255), 2)
-
-        cv.line(image, (corner_01[0], corner_01[1]),
-                (corner_02[0], corner_02[1]), (255, 0, 0), 2)
-        cv.line(image, (corner_02[0], corner_02[1]),
-                (corner_03[0], corner_03[1]), (255, 0, 0), 2)
-        cv.line(image, (corner_03[0], corner_03[1]),
-                (corner_04[0], corner_04[1]), (0, 255, 0), 2)
-        cv.line(image, (corner_04[0], corner_04[1]),
-                (corner_01[0], corner_01[1]), (0, 255, 0), 2)
-
-        cv.putText(image, str(tag_id), (center[0] - 10, center[1] - 10),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2, cv.LINE_AA)
-
-    fps = round(1.0 / elapsed_time)
-    cv.putText(image,
-               "FPS:" + '{:.1f}'.format(fps),
-               (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2,
-               cv.LINE_AA)
-    cv.putText(image,
-               ("Pose: " + str(round(metersToInches(pose[0]),3)) + " " + str(round(metersToInches(pose[1]),3)) + " " + str(round(metersToInches(pose[2]),3))),
-               (10, 60), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2,
-               cv.LINE_AA)
-    
-
-    return image
-
+    #cv.destroyAllWindows()
 
 if __name__ == '__main__':
+    if USING_NT:
+        while not network_tables.isConnected():
+            time.sleep(0.3)
     main()
