@@ -136,13 +136,13 @@ def main():
                 pose_z_sum += curPose[2][0]
 
         size = len(detections)
-        pose = [[0], [0], [0]]
+        pose = [0, 0, 0]
         if size > 0:
             pose = np.array([pose_x_sum/size,pose_y_sum/size,pose_z_sum/size])
 
-        poseX = pose[0][0]
-        poseY = pose[1][0]
-        poseZ = pose[2][0]
+        poseX = pose[0]
+        poseY = pose[1]
+        poseZ = pose[2]
 
         poseUpload = [poseX, poseY, poseZ]
 
