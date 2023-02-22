@@ -67,5 +67,3 @@ def getEntry(tableName, entryName) -> ntcore.NetworkTableEntry:
     if not isConnected():
         print("Not connected to robot!")
     return inst.getTable(tableName).getEntry(entryName)
-
-init()
