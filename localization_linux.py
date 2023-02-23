@@ -15,13 +15,8 @@ if USING_NT:
 
 TAG_SIZE = 0.15244
 FAMILIES = "tag16h5"
-RES = (640,480)
+RES = (1280,720)
 
-def get_cap(cap_device):
-    try:
-        return True, cv.VideoCapture(cap_device)
-    except:
-        return False, None
 def get_args():
     parser = argparse.ArgumentParser()
 
@@ -71,7 +66,7 @@ def main():
     decode_sharpening = args.decode_sharpening
     debug = args.debug
 
-    r, cap = get_cap(cap_device)
+    cap = cv.VideoCapture(cap_device + cv.CAP_DSHOW)
     
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
@@ -81,9 +76,9 @@ def main():
     # Camera Info Setup
     camera_info["res"] = RES
 
-    camera_info["K"] = np.array([[367.7013393230449, 0.0, 323.3378629663504], [0.0, 369.7151984089531, 162.63699072828888], [0.0, 0.0, 1.0]])
-    camera_info["params"] = [367.7013393230449, 369.7151984089531, 323.3378629663504, 162.63699072828888]
-    camera_info["D"] = np.array([[-0.042203858496260044], [-0.08378810354583231], [0.4607572694660925], [-0.5671615907615343]])
+    camera_info["K"] = np.array([[736.4523760329718, 0.0, 636.8724945558921], [0.0, 741.0803279826814, 325.90101950102724], [0.0, 0.0, 1.0]])
+    camera_info["params"] = [736.4523760329718, 741.0803279826814, 636.8724945558921, 325.90101950102724]
+    camera_info["D"] = np.array([[-0.043073729765747026], [0.1660118413558553], [-0.9009625093041034], [1.2755476034926585]])
 
     camera_info["fisheye"] = True
     camera_info["map_1"], camera_info["map_2"] = cv.fisheye.initUndistortRectifyMap(camera_info["K"], camera_info["D"],
