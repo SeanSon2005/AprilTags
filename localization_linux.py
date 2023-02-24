@@ -44,12 +44,14 @@ def main():
 
     # Add information about tag locations THIS ARE GLOBAL LOCATIONS IN INCHES
     # Function Arguments are id,x,y,z,theta_x,theta_y,theta_z
-    definedTags.add_tag(1, 0., 0., 0., 0., 0., 0.)
-    definedTags.add_tag(2, 12., 0., 0., 0., 0., 0.)
-    definedTags.add_tag(3, 0., 0., 0., 0., 0., 0.)
-    definedTags.add_tag(4, 0., 0., 0., 0., 0., 0.)
-    definedTags.add_tag(5, 0., 0., 0., 0., 0., 0.)
-    definedTags.add_tag(6, 0., 0., 0., 0., 0., 0.)
+    definedTags.add_tag(1, 610.77, 42.19,  18.22, 0., 0., 0.)
+    definedTags.add_tag(2, 610.77, 108.19, 18.22, 0., 0., 0.)
+    definedTags.add_tag(3, 610.77, 174.19, 18.22, 0., 0., 0.)
+    definedTags.add_tag(4, 636.96, 265.74, 27.38, 0., 0., 0.)
+    definedTags.add_tag(5, 14.25,  265.74, 27.38, 0., 0., 0.)
+    definedTags.add_tag(6, 40.45,  174.19, 18.22, 0., 0., 0.)
+    definedTags.add_tag(7, 40.45,  108.19, 18.22, 0., 0., 0.)
+    definedTags.add_tag(8, 40.45,  42.19,  18.22, 0., 0., 0.)
 
 
     args = get_args()

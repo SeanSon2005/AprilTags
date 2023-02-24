@@ -10,10 +10,11 @@ class Tag():
         corr = np.eye(3)
         corr[0, 0] = -1
         self.tag_corr = corr
-    def add_tag(self,id,x,y,z,theta_x,theta_y,theta_z):
 
+    def add_tag(self,id,x,y,z,theta_x,theta_y,theta_z):
         self.locations[id]=self.inchesToTranslationVector(x,y,z)
         self.orientations[id]=self.eulerAnglesToRotationMatrix(theta_x,theta_y,theta_z)
+
     # Calculates Rotation Matrix given euler angles.
     def eulerAnglesToRotationMatrix(self, theta_x,theta_y,theta_z):
         R_x = np.array([[1, 0, 0],
@@ -32,12 +33,13 @@ class Tag():
                         ])
 
         R = np.matmul(R_z, np.matmul(R_y, R_x))
-
         return R.T
+    
     def inchesToTranslationVector(self,x,y,z):
-        return np.array([[x],[y],[z]])*0.0254
+        return np.array([[x],[y],[z]]) * 0.0254
+    
     def estimate_pose(self, tag_id, R,t):
-        if(tag_id < 1 or tag_id > 6):
+        if(tag_id < 1 or tag_id > 8):
             return
         local = self.tag_corr @ R.T @ t
         return self.orientations[tag_id] @ local + self.locations[tag_id]
